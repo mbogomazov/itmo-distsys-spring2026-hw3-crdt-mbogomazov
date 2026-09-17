@@ -1,0 +1,60 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Tests - Registers
+      id: tests-registers
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Tests - Registers
+        setup-command: pip install -r requirements.txt
+        command: pytest tests/test_counters.py
+        timeout: 2
+        max-score: 2
+    - name: Tests - Counters
+      id: tests-counters
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Tests - Counters
+        setup-command: pip install -r requirements.txt
+        command: pytest tests/test_counters.py
+        timeout: 2
+        max-score: 2
+    - name: Tests - Sets
+      id: tests-sets
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Tests - Sets
+        setup-command: pip install -r requirements.txt
+        command: pytest tests/test_sets.py
+        timeout: 2
+        max-score: 4
+    - name: Tests - Graphs
+      id: tests-graphs
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Tests - Graphs
+        setup-command: pip install -r requirements.txt
+        command: pytest tests/test_graph.py
+        timeout: 2
+        max-score: 2
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        TESTS-REGISTERS_RESULTS: "${{steps.tests-registers.outputs.result}}"
+        TESTS-COUNTERS_RESULTS: "${{steps.tests-counters.outputs.result}}"
+        TESTS-SETS_RESULTS: "${{steps.tests-sets.outputs.result}}"
+        TESTS-GRAPHS_RESULTS: "${{steps.tests-graphs.outputs.result}}"
+      with:
+        runners: tests-registers,tests-counters,tests-sets,tests-graphs
